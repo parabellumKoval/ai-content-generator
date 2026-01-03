@@ -65,11 +65,13 @@ class AiContentGeneratorSettingsRegistrar implements SettingsRegistrarInterface
                         }
                     }
 
-                    $page->add(
-                        Field::make('ai_content_generator.providers_statuses', 'custom_html')
-                            ->label('Статусы')
-                            ->value($this->renderStatuses($drivers))
-                    );
+                    if (!app()->runningInConsole()) {
+                        $page->add(
+                            Field::make('ai_content_generator.providers_statuses', 'custom_html')
+                                ->label('Статусы')
+                                ->value($this->renderStatusesSafely($drivers))
+                        );
+                    }
                 });
         });
     }
@@ -113,5 +115,14 @@ class AiContentGeneratorSettingsRegistrar implements SettingsRegistrarInterface
         $html .= '</ul>';
 
         return $html;
+    }
+
+    protected function renderStatusesSafely(array $drivers): string
+    {
+        try {
+            return $this->renderStatuses($drivers);
+        } catch (\Throwable $e) {
+            return '<div class="alert alert-secondary mb-3">Статусы провайдеров недоступны (нет соединения с базой).</div>';
+        }
     }
 }
