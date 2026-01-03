@@ -1,0 +1,29 @@
+{
+    "name": "parabellumkoval/ai-content-generator",
+    "description": "Driver-based AI content generation with unified API, logging and Backpack admin.",
+    "type": "library",
+    "license": "MIT",
+    "require": {
+        "php": "^8.2",
+        "laravel/framework": "^12.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "ParabellumKoval\\AiContentGenerator\\": "src/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "ParabellumKoval\\AiContentGenerator\\AiContentGeneratorServiceProvider"
+            ]
+        }
+    },
+    "suggest": {
+        "openai-php/client": "Use the official OpenAI client instead of raw HTTP requests.",
+        "google-gemini-php/client": "Use the official Gemini client.",
+        "grok-php/client": "Use the Grok client if available."
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}
