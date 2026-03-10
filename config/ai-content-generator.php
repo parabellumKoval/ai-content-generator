@@ -7,6 +7,8 @@ return [
 
     'output_type' => 'single', // single|collection
 
+    'collection_strategy' => env('AI_CONTENT_COLLECTION_STRATEGY', 'single_array'), // single_array|multi_completion
+
     'logging' => [
         'enabled' => true,
     ],
@@ -23,12 +25,14 @@ return [
             'api_key' => env('OPENAI_API_KEY'),
             'base_uri' => env('OPENAI_BASE_URI', 'https://api.openai.com/v1'),
             'default_model' => env('OPENAI_MODEL', 'gpt-4o-mini'),
+            'max_n' => env('OPENAI_MAX_N', 8),
             'models' => [
                 'gpt-4o-mini' => 'gpt-4o-mini',
                 'gpt-4o' => 'gpt-4o',
                 'gpt-5.1' => 'gpt-5.1',
             ],
-            'timeout' => 30,
+            'connect_timeout' => (int) env('OPENAI_CONNECT_TIMEOUT', 15),
+            'timeout' => (int) env('OPENAI_TIMEOUT', 90),
         ],
         'gemini' => [
             'name' => 'Gemini',
@@ -40,7 +44,8 @@ return [
                 'gemini-1.5-flash' => 'gemini-1.5-flash',
                 'gemini-1.5-pro' => 'gemini-1.5-pro',
             ],
-            'timeout' => 30,
+            'connect_timeout' => (int) env('GEMINI_CONNECT_TIMEOUT', 15),
+            'timeout' => (int) env('GEMINI_TIMEOUT', 90),
         ],
         'grok' => [
             'name' => 'Grok',
@@ -52,11 +57,16 @@ return [
                 'grok-beta' => 'grok-beta',
                 'grok-2' => 'grok-2',
             ],
-            'timeout' => 30,
+            'connect_timeout' => (int) env('GROK_CONNECT_TIMEOUT', 15),
+            'timeout' => (int) env('GROK_TIMEOUT', 90),
         ],
     ],
 
     'rate_limit' => [
         'cooldown_minutes' => 10,
+    ],
+
+    'error' => [
+        'cooldown_minutes' => (int) env('AI_CONTENT_ERROR_COOLDOWN_MINUTES', 2),
     ],
 ];

@@ -32,6 +32,12 @@ class ProviderStatusRepository
         $status = $this->get($driver);
 
         if (!$force && $status->isBlocked()) {
+            if ($this->canAutoRecover($status)) {
+                $this->markAvailable($driver);
+
+                return $this->get($driver);
+            }
+
             $reason = $status->message ?? 'provider is marked as unavailable';
             throw new ProviderUnavailableException($driver, $reason);
         }
@@ -92,11 +98,17 @@ class ProviderStatusRepository
             return;
         }
 
+        $cooldownMinutes = max(0, (int) config('ai-content-generator.error.cooldown_minutes', 2));
+        $blockedUntil = $cooldownMinutes > 0
+            ? now()->addMinutes($cooldownMinutes)
+            : null;
+
         $this->persistStatus(
             $driver,
             AiProviderStatus::STATUS_ERROR,
             $message,
-            $code
+            $code,
+            $blockedUntil
         );
     }
 
@@ -134,6 +146,15 @@ class ProviderStatusRepository
             'last_error_at' => now(),
             'blocked_until' => $blockedUntil,
         ]);
+    }
+
+    protected function canAutoRecover(AiProviderStatus $status): bool
+    {
+        if ($status->status !== AiProviderStatus::STATUS_ERROR) {
+            return false;
+        }
+
+        return $status->blocked_until === null || now()->greaterThanOrEqualTo($status->blocked_until);
     }
 
     protected function tableReady(): bool

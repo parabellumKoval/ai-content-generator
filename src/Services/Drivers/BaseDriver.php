@@ -16,9 +16,10 @@ abstract class BaseDriver implements ContentDriver
 
     protected function http(): PendingRequest
     {
-        $timeout = $this->config['timeout'] ?? 30;
+        $timeout = max(1, (float) ($this->config['timeout'] ?? 30));
+        $connectTimeout = max(1, (float) ($this->config['connect_timeout'] ?? min(15, $timeout)));
 
-        return Http::timeout($timeout);
+        return Http::connectTimeout($connectTimeout)->timeout($timeout);
     }
 
     protected function ensureApiKey(): void
@@ -52,7 +53,11 @@ abstract class BaseDriver implements ContentDriver
         $prompt = $request->prompt;
 
         if ($request->outputType === 'collection' && $request->quantity > 1) {
-            $prompt .= "\n\nReturn exactly {$request->quantity} items.";
+            if ($request->collectionStrategy === 'multi_completion') {
+                $prompt .= "\n\nReturn exactly 1 item.";
+            } else {
+                $prompt .= "\n\nReturn exactly {$request->quantity} items.";
+            }
         }
 
         if ($request->responseFormat !== 'text') {

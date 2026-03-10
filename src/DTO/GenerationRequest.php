@@ -14,12 +14,14 @@ class GenerationRequest
         public ?int $maxTokens = null,
         public string $responseFormat = 'text',
         public string $outputType = 'single',
+        public string $collectionStrategy = 'single_array',
         public int $quantity = 1,
         public bool $force = false,
     ) {
         $this->driver ??= \Settings::get('ai_content_generator.default_driver', config('ai-content-generator.default_driver', 'openai'));
         $this->responseFormat = $this->responseFormat ?: config('ai-content-generator.response_format', 'text');
         $this->outputType = $this->outputType ?: config('ai-content-generator.output_type', 'single');
+        $this->collectionStrategy = $this->collectionStrategy ?: config('ai-content-generator.collection_strategy', 'single_array');
     }
 
     public static function fromArray(array $data): self
@@ -34,6 +36,7 @@ class GenerationRequest
             maxTokens: $data['max_tokens'] ?? $data['maxTokens'] ?? null,
             responseFormat: $data['response_format'] ?? $data['responseFormat'] ?? config('ai-content-generator.response_format', 'text'),
             outputType: $data['output_type'] ?? $data['outputType'] ?? config('ai-content-generator.output_type', 'single'),
+            collectionStrategy: $data['collection_strategy'] ?? $data['collectionStrategy'] ?? config('ai-content-generator.collection_strategy', 'single_array'),
             quantity: (int)($data['quantity'] ?? 1),
             force: (bool)($data['force'] ?? false),
         );
@@ -51,6 +54,7 @@ class GenerationRequest
             'max_tokens' => $this->maxTokens,
             'response_format' => $this->responseFormat,
             'output_type' => $this->outputType,
+            'collection_strategy' => $this->collectionStrategy,
             'quantity' => $this->quantity,
             'force' => $this->force,
         ];

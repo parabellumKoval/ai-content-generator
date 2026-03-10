@@ -15,6 +15,16 @@ class OpenAiDriver extends BaseDriver
     {
         $this->ensureApiKey();
 
+        $apiMaxN = 8;
+        $configuredMaxN = (int) ($this->config['max_n'] ?? $apiMaxN);
+        // OpenAI currently rejects n > 8 on chat/completions.
+        $maxN = max(1, min($configuredMaxN, $apiMaxN));
+        $useMultiCompletion = $this->shouldUseMultiCompletion($request, $maxN);
+
+        if (!$useMultiCompletion && $request->collectionStrategy === 'multi_completion') {
+            $request->collectionStrategy = 'single_array';
+        }
+
         $body = [
             'model' => $request->model ?? $this->config['default_model'] ?? null,
             'messages' => $this->buildMessages($request),
@@ -25,16 +35,18 @@ class OpenAiDriver extends BaseDriver
             $body['max_tokens'] = $request->maxTokens;
         }
 
-        if ($request->outputType === 'collection' && $request->quantity > 1) {
-            $body['n'] = $request->quantity;
-        }
-
-        if (in_array($request->responseFormat, ['json', 'array'], true)) {
+        if ($request->responseFormat === 'json') {
             $body['response_format'] = ['type' => 'json_object'];
         }
 
         if (!empty($request->payload)) {
             $body = array_replace_recursive($body, $request->payload);
+        }
+
+        if ($useMultiCompletion) {
+            $body['n'] = $request->quantity;
+        } else {
+            unset($body['n']);
         }
 
         $endpoint = rtrim($this->config['base_uri'], '/') . '/chat/completions';
@@ -106,6 +118,15 @@ class OpenAiDriver extends BaseDriver
         }
 
         throw $e;
+    }
+
+    protected function shouldUseMultiCompletion(GenerationRequest $request, int $maxN): bool
+    {
+        return $request->collectionStrategy === 'multi_completion'
+            && $request->outputType === 'collection'
+            && $request->quantity > 1
+            && $request->responseFormat === 'text'
+            && $request->quantity <= $maxN;
     }
 
     protected function normalizeRetryAfter(mixed $value): ?int

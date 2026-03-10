@@ -75,12 +75,47 @@ class AiContentGenerationCrudController extends CrudController
             ['name' => 'quantity', 'label' => 'Кол-во'],
             ['name' => 'temperature', 'label' => 'Temperature'],
             ['name' => 'max_tokens', 'label' => 'Max tokens'],
-            ['name' => 'prompt', 'label' => 'Prompt', 'type' => 'textarea'],
-            ['name' => 'system_instruction', 'label' => 'System instruction', 'type' => 'textarea'],
+            [
+                'name' => 'prompt',
+                'label' => 'Prompt',
+                'type' => 'textarea',
+                'wrapper' => [
+                    'style' => 'white-space: pre-wrap; word-wrap: break-word; max-width: 100%;',
+                ],
+            ],
+            [
+                'name' => 'system_instruction',
+                'label' => 'System instruction',
+                'type' => 'textarea',
+                'wrapper' => [
+                    'style' => 'white-space: pre-wrap; word-wrap: break-word; max-width: 100%;',
+                ],
+            ],
             ['name' => 'payload', 'label' => 'Payload', 'type' => 'json'],
-            ['name' => 'parsed_response', 'label' => 'Result', 'type' => 'json'],
-            ['name' => 'raw_response', 'label' => 'Raw', 'type' => 'textarea'],
-            ['name' => 'error_message', 'label' => 'Ошибка', 'type' => 'textarea'],
+            [
+                'name' => 'parsed_response',
+                'label' => 'Result',
+                'type' => 'json',
+                'wrapper' => [
+                    'style' => 'white-space: pre-wrap; word-wrap: break-word; max-width: 100%;',
+                ],
+            ],
+            [
+                'name' => 'raw_response',
+                'label' => 'Raw',
+                'type' => 'textarea',
+                'wrapper' => [
+                    'style' => 'white-space: pre-wrap; word-wrap: break-word; max-width: 100%;',
+                ],
+            ],
+            [
+                'name' => 'error_message',
+                'label' => 'Ошибка',
+                'type' => 'textarea',
+                'wrapper' => [
+                    'style' => 'white-space: pre-wrap; word-wrap: break-word; max-width: 100%;',
+                ],
+            ],
             ['name' => 'duration_ms', 'label' => 'Время, мс'],
             ['name' => 'prompt_tokens', 'label' => 'Prompt tokens'],
             ['name' => 'completion_tokens', 'label' => 'Completion tokens'],

@@ -15,6 +15,12 @@ class GrokDriver extends BaseDriver
     {
         $this->ensureApiKey();
 
+        $useMultiCompletion = $this->shouldUseMultiCompletion($request);
+
+        if (!$useMultiCompletion && $request->collectionStrategy === 'multi_completion') {
+            $request->collectionStrategy = 'single_array';
+        }
+
         $body = [
             'model' => $request->model ?? $this->config['default_model'] ?? null,
             'messages' => $this->buildMessages($request),
@@ -25,12 +31,14 @@ class GrokDriver extends BaseDriver
             $body['max_tokens'] = $request->maxTokens;
         }
 
-        if ($request->outputType === 'collection' && $request->quantity > 1) {
-            $body['n'] = $request->quantity;
-        }
-
         if (!empty($request->payload)) {
             $body = array_replace_recursive($body, $request->payload);
+        }
+
+        if ($useMultiCompletion) {
+            $body['n'] = $request->quantity;
+        } else {
+            unset($body['n']);
         }
 
         $endpoint = rtrim($this->config['base_uri'], '/') . '/chat/completions';
@@ -97,6 +105,14 @@ class GrokDriver extends BaseDriver
         }
 
         throw $e;
+    }
+
+    protected function shouldUseMultiCompletion(GenerationRequest $request): bool
+    {
+        return $request->collectionStrategy === 'multi_completion'
+            && $request->outputType === 'collection'
+            && $request->quantity > 1
+            && $request->responseFormat === 'text';
     }
 
     protected function normalizeRetryAfter(mixed $value): ?int
