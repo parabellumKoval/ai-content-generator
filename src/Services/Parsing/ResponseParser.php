@@ -9,9 +9,13 @@ class ResponseParser
     /**
      * @param array<int, string|null> $messages
      */
-    public function parse(array $messages, string $format, string $outputType, int $quantity): mixed
+    public function parse(array $messages, string $format, string $outputType, int $quantity, array $artifacts = []): mixed
     {
         $messages = $this->normalizeMessages($messages);
+
+        if ($format === 'image') {
+            return $this->parseImages($messages, $artifacts, $outputType);
+        }
 
         if ($format === 'text') {
             return $outputType === 'collection' ? $messages : ($messages[0] ?? '');
@@ -31,6 +35,64 @@ class ResponseParser
         }
 
         return $decoded;
+    }
+
+    /**
+     * @param array<int, string> $messages
+     */
+    protected function parseImages(array $messages, array $artifacts, string $outputType): mixed
+    {
+        $images = $artifacts['images'] ?? [];
+
+        if (!is_array($images)) {
+            $images = [];
+        }
+
+        // Fallback: try to detect image data-uris in text responses.
+        if ($images === []) {
+            foreach ($messages as $message) {
+                if (!preg_match_all('#data:image/[a-zA-Z0-9.+-]+;base64,[A-Za-z0-9+/=\s]+#', $message, $matches)) {
+                    continue;
+                }
+
+                foreach ($matches[0] as $dataUri) {
+                    $images[] = [
+                        'data_uri' => preg_replace('/\s+/', '', trim($dataUri)),
+                    ];
+                }
+            }
+        }
+
+        $images = array_values(array_filter(array_map(function ($item) {
+            if (is_string($item)) {
+                return ['data_uri' => trim($item)];
+            }
+
+            if (!is_array($item)) {
+                return null;
+            }
+
+            $dataUri = $item['data_uri'] ?? null;
+            if (!is_string($dataUri) || trim($dataUri) === '') {
+                return null;
+            }
+
+            $normalized = [
+                'data_uri' => preg_replace('/\s+/', '', trim($dataUri)),
+            ];
+
+            if (!empty($item['mime_type']) && is_string($item['mime_type'])) {
+                $normalized['mime_type'] = $item['mime_type'];
+            }
+
+            if (!empty($item['base64']) && is_string($item['base64'])) {
+                $normalized['base64'] = preg_replace('/\s+/', '', trim($item['base64']));
+            }
+
+            return $normalized;
+        }, $images)));
+
+        return $outputType === 'collection' ? $images : ($images[0] ?? null);
     }
 
     /**

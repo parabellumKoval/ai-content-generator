@@ -3,7 +3,7 @@
 return [
     'default_driver' => env('AI_CONTENT_DEFAULT_DRIVER', 'openai'),
 
-    'response_format' => 'text', // text|json|array
+    'response_format' => 'text', // text|json|array|image
 
     'output_type' => 'single', // single|collection
 
@@ -39,10 +39,26 @@ return [
             'handler' => ParabellumKoval\AiContentGenerator\Services\Drivers\GeminiDriver::class,
             'api_key' => env('GEMINI_API_KEY'),
             'base_uri' => env('GEMINI_BASE_URI', 'https://generativelanguage.googleapis.com/v1beta'),
-            'default_model' => env('GEMINI_MODEL', 'gemini-pro'),
+            'default_model' => env('GEMINI_MODEL', 'gemini-2.5-flash'),
             'models' => [
-                'gemini-1.5-flash' => 'gemini-1.5-flash',
-                'gemini-1.5-pro' => 'gemini-1.5-pro',
+                'gemini-3.1-pro-preview' => 'gemini-3.1-pro-preview',
+                'gemini-3-flash-preview' => 'gemini-3-flash-preview',
+                'gemini-3.1-flash-lite-preview' => 'gemini-3.1-flash-lite-preview',
+                'gemini-3.1-flash-image-preview' => 'gemini-3.1-flash-image-preview',
+                'gemini-3-pro-image-preview' => 'gemini-3-pro-image-preview',
+                'gemini-2.5-pro' => 'gemini-2.5-pro',
+                'gemini-2.5-flash' => 'gemini-2.5-flash',
+                'gemini-2.5-flash-lite' => 'gemini-2.5-flash-lite',
+                'gemini-2.5-flash-image' => 'gemini-2.5-flash-image',
+            ],
+            'model_aliases' => [
+                // Deprecated and shut down models: remap to currently supported counterparts.
+                'gemini-2.5-flash-image-preview' => 'gemini-2.5-flash-image',
+                'gemini-2.0-flash-exp-image-generation' => 'gemini-2.5-flash-image',
+                'gemini-2.0-flash-preview-image-generation' => 'gemini-2.5-flash-image',
+                'gemini-1.5-flash' => 'gemini-2.5-flash-lite',
+                'gemini-1.5-pro' => 'gemini-2.5-pro',
+                'gemini-3-pro-preview' => 'gemini-3.1-pro-preview',
             ],
             'connect_timeout' => (int) env('GEMINI_CONNECT_TIMEOUT', 15),
             'timeout' => (int) env('GEMINI_TIMEOUT', 90),

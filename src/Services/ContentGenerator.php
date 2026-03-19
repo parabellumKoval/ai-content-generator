@@ -63,7 +63,8 @@ class ContentGenerator
                 $driverResponse->messages,
                 $request->responseFormat,
                 $request->outputType,
-                $request->quantity
+                $request->quantity,
+                $driverResponse->artifacts
             );
 
             $duration = (int) ((microtime(true) - $startedAt) * 1000);
@@ -92,6 +93,7 @@ class ContentGenerator
                     'response_format' => $request->responseFormat,
                     'output_type' => $request->outputType,
                     'duration_ms' => $duration,
+                    'artifacts' => $driverResponse->artifacts,
                 ],
                 raw: $driverResponse->raw,
             );

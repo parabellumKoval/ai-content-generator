@@ -7,6 +7,7 @@ class DriverResponse
     public function __construct(
         public mixed $raw,
         public array $messages,
+        public array $artifacts = [],
         public array $usage = [],
         public ?string $model = null,
     ) {
@@ -22,6 +23,7 @@ class DriverResponse
         return [
             'raw' => $this->raw,
             'messages' => $this->messages,
+            'artifacts' => $this->artifacts,
             'usage' => $this->usage,
             'model' => $this->model,
         ];
