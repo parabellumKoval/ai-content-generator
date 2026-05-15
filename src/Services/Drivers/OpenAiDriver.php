@@ -32,7 +32,8 @@ class OpenAiDriver extends BaseDriver
         ];
 
         if ($request->maxTokens) {
-            $body['max_tokens'] = $request->maxTokens;
+            $tokenLimitKey = $this->tokenLimitKey((string) $body['model']);
+            $body[$tokenLimitKey] = $request->maxTokens;
         }
 
         if ($request->responseFormat === 'json') {
@@ -127,6 +128,11 @@ class OpenAiDriver extends BaseDriver
             && $request->quantity > 1
             && $request->responseFormat === 'text'
             && $request->quantity <= $maxN;
+    }
+
+    protected function tokenLimitKey(string $model): string
+    {
+        return str_starts_with($model, 'gpt-5') ? 'max_completion_tokens' : 'max_tokens';
     }
 
     protected function normalizeRetryAfter(mixed $value): ?int

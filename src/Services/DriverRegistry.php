@@ -8,18 +8,12 @@ use ParabellumKoval\AiContentGenerator\Contracts\ContentDriver;
 
 class DriverRegistry
 {
-    protected array $instances = [];
-
     public function __construct(protected Container $app)
     {
     }
 
     public function get(string $driver): ContentDriver
     {
-        if (isset($this->instances[$driver])) {
-            return $this->instances[$driver];
-        }
-
         $config = $this->getConfig($driver);
 
         $handler = $config['handler'] ?? null;
@@ -27,7 +21,7 @@ class DriverRegistry
             throw new InvalidArgumentException("Handler for driver {$driver} is not configured.");
         }
 
-        return $this->instances[$driver] = $this->app->make($handler, ['config' => $config]);
+        return $this->app->make($handler, ['config' => $config]);
     }
 
     public function all(): array

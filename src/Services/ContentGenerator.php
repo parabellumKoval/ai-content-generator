@@ -11,6 +11,7 @@ use ParabellumKoval\AiContentGenerator\Exceptions\ProviderUnavailableException;
 use ParabellumKoval\AiContentGenerator\Exceptions\RateLimitException;
 use ParabellumKoval\AiContentGenerator\Exceptions\TimeoutException;
 use ParabellumKoval\AiContentGenerator\Models\AiContentGeneration;
+use ParabellumKoval\AiContentGenerator\Models\AiProviderStatus;
 use ParabellumKoval\AiContentGenerator\Services\Parsing\ResponseParser;
 
 class ContentGenerator
@@ -39,6 +40,7 @@ class ContentGenerator
         if (!$request->model) {
             $request->model = $driverConfig['default_model'] ?? null;
         }
+        $this->recoverMissingKeyStatus($request->driver, $driverConfig);
 
         $log = null;
         if (config('ai-content-generator.logging.enabled', true)) {
@@ -131,6 +133,29 @@ class ContentGenerator
         $log->markFailure($status, $code, $message, [
             'duration_ms' => $duration,
         ]);
+    }
+
+    protected function recoverMissingKeyStatus(string $driver, array $driverConfig): void
+    {
+        if (empty($driverConfig['api_key'])) {
+            return;
+        }
+
+        try {
+            $status = $this->providerStatuses->get($driver);
+        } catch (\Throwable) {
+            return;
+        }
+
+        if (
+            $status->status !== AiProviderStatus::STATUS_INVALID_KEY
+            || $status->error_code !== 'invalid_key'
+            || !str_contains((string) $status->message, 'API key is missing')
+        ) {
+            return;
+        }
+
+        $this->providerStatuses->markAvailable($driver);
     }
 
     protected function maskKey(?string $key): ?string
